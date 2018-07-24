@@ -2,7 +2,7 @@
 
 
 function maven-generate-lox-interpreter() {
-    local group_id="com.craftinginterpreters"
+    local group_id="com.craftinginterpreters.lox"
     local artifact_id="lox-interpreter"
     local java_version="1.10"
 
@@ -57,6 +57,10 @@ build:
 test: build
 	mvn test
 
+.PHONY: run
+run:
+	mvn exec:java -Dexec.mainClass="${group_id}".App
+
 .PHONY: clean
 clean:
 	mvn clean
@@ -74,4 +78,6 @@ EOF
 # If provided, execute the specified function.
 if [ ! -z "$1" ]; then
   $1
+else
+  maven-generate-lox-interpreter
 fi
