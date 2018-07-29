@@ -7,32 +7,30 @@ import junit.framework.TestSuite;
 /**
  * Unit test for simple App.
  */
-public class LoxTest 
-    extends TestCase
-{
+public class LoxTest extends TestCase {
+    
     /**
      * Create the test case
      *
      * @param testName name of the test case
      */
-    public LoxTest( String testName )
-    {
+    public LoxTest( String testName ) {
         super( testName );
     }
 
     /**
      * @return the suite of tests being tested
      */
-    public static Test suite()
-    {
+    public static Test suite() {
         return new TestSuite( LoxTest.class );
     }
 
     /**
      * Rigourous Test :-)
      */
-    public void testLox()
-    {
+    public void testLox() {
         assertTrue( true );
     }
 }
+
+
