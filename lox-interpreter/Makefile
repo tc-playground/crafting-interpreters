@@ -1,6 +1,8 @@
 GROUP_ID := "com.craftinginterpreters.lox"
 ARTIFACT_ID := "lox-interpreter"
 
+AST_ARGS := "src/main/java/com/craftinginterpreters/lox"
+
 .PHONY: build
 build:
 	mvn package
@@ -8,6 +10,10 @@ build:
 .PHONY: test
 test: build
 	mvn test
+
+.PHONY: generate
+generate:
+	mvn exec:java -Dexec.mainClass="com.craftinginterpreters.tool.GenerateAst" -Dexec.args="$(AST_ARGS)"
 
 .PHONY: run
 run:
