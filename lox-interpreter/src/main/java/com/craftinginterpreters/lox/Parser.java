@@ -1,8 +1,28 @@
 package com.craftinginterpreters.lox;
 
-import java.util.List;
+import static com.craftinginterpreters.lox.TokenType.BANG;
+import static com.craftinginterpreters.lox.TokenType.BANG_EQUAL;
+import static com.craftinginterpreters.lox.TokenType.EOF;
+import static com.craftinginterpreters.lox.TokenType.EQUAL_EQUAL;
+import static com.craftinginterpreters.lox.TokenType.FALSE;
+import static com.craftinginterpreters.lox.TokenType.GREATER;
+import static com.craftinginterpreters.lox.TokenType.GREATER_EQUAL;
+import static com.craftinginterpreters.lox.TokenType.LEFT_PAREN;
+import static com.craftinginterpreters.lox.TokenType.LESS;
+import static com.craftinginterpreters.lox.TokenType.LESS_EQUAL;
+import static com.craftinginterpreters.lox.TokenType.MINUS;
+import static com.craftinginterpreters.lox.TokenType.NIL;
+import static com.craftinginterpreters.lox.TokenType.NUMBER;
+import static com.craftinginterpreters.lox.TokenType.PLUS;
+import static com.craftinginterpreters.lox.TokenType.RIGHT_PAREN;
+import static com.craftinginterpreters.lox.TokenType.SEMICOLON;
+import static com.craftinginterpreters.lox.TokenType.SLASH;
+import static com.craftinginterpreters.lox.TokenType.STAR;
+import static com.craftinginterpreters.lox.TokenType.STRING;
+import static com.craftinginterpreters.lox.TokenType.TRUE;
 
-import static com.craftinginterpreters.lox.TokenType.*;
+import java.util.ArrayList;
+import java.util.List;
 
 class Parser {
 
@@ -15,17 +35,50 @@ class Parser {
         this.tokens = tokens;
     }
 
-    Expr parse() {
-        try {
-            return expression();
-        } catch (ParseError error) {
-            return null;
+    
+    // program   → statement* EOF ;
+    List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+        return statements;
     }
+
 
     // Production Rules *******************************************************
 
-    // Binary Operations
+
+    // statement → exprStmt
+    //           | printStmt ;
+    //
+    private Stmt statement() {
+        if (match(TokenType.PRINT)) {
+            return printStatement();
+        }
+        return expressionStatement();
+    }
+
+
+    // exprStmt  → expression ";" ;
+    //
+    private Stmt printStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+
+
+    // printStmt → "print" expression ";" ;
+    //
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
+    }
+
+
+    // Binary Expression Operations
     //
 
     private Expr expression() {
@@ -93,7 +146,7 @@ class Parser {
     }
 
 
-    // Unary Operations
+    // Unary Expression Operations
     //
 
     // unary → ( "!" | "-" ) unary

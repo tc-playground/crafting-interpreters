@@ -14,11 +14,18 @@ public class GenerateAst {
         }
         String outputDir = args[0];
 
+        // Expression Syntax Node
         defineAst(outputDir, "Expr", Arrays.asList(
             "Binary   : Expr left, Token operator, Expr right",
             "Grouping : Expr expression",
             "Literal  : Object value",
             "Unary    : Token operator, Expr right"
+        ));
+
+        // Statement Syntax Nodes
+        defineAst(outputDir, "Stmt", Arrays.asList(
+            "Expression : Expr expression",
+            "Print      : Expr expression"
         ));
     }
 
