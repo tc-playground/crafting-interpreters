@@ -3,10 +3,12 @@ package com.craftinginterpreters.lox;
 import static com.craftinginterpreters.lox.TokenType.BANG;
 import static com.craftinginterpreters.lox.TokenType.BANG_EQUAL;
 import static com.craftinginterpreters.lox.TokenType.EOF;
+import static com.craftinginterpreters.lox.TokenType.EQUAL;
 import static com.craftinginterpreters.lox.TokenType.EQUAL_EQUAL;
 import static com.craftinginterpreters.lox.TokenType.FALSE;
 import static com.craftinginterpreters.lox.TokenType.GREATER;
 import static com.craftinginterpreters.lox.TokenType.GREATER_EQUAL;
+import static com.craftinginterpreters.lox.TokenType.IDENTIFIER;
 import static com.craftinginterpreters.lox.TokenType.LEFT_PAREN;
 import static com.craftinginterpreters.lox.TokenType.LESS;
 import static com.craftinginterpreters.lox.TokenType.LESS_EQUAL;
@@ -14,12 +16,14 @@ import static com.craftinginterpreters.lox.TokenType.MINUS;
 import static com.craftinginterpreters.lox.TokenType.NIL;
 import static com.craftinginterpreters.lox.TokenType.NUMBER;
 import static com.craftinginterpreters.lox.TokenType.PLUS;
+import static com.craftinginterpreters.lox.TokenType.PRINT;
 import static com.craftinginterpreters.lox.TokenType.RIGHT_PAREN;
 import static com.craftinginterpreters.lox.TokenType.SEMICOLON;
 import static com.craftinginterpreters.lox.TokenType.SLASH;
 import static com.craftinginterpreters.lox.TokenType.STAR;
 import static com.craftinginterpreters.lox.TokenType.STRING;
 import static com.craftinginterpreters.lox.TokenType.TRUE;
+import static com.craftinginterpreters.lox.TokenType.VAR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +40,11 @@ class Parser {
     }
 
     
-    // program   → statement* EOF ;
+    // program   → declaration* EOF ;
     List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
         return statements;
     }
@@ -48,19 +52,31 @@ class Parser {
 
     // Production Rules *******************************************************
 
+    // declaration → varDecl
+    //             | statement ;
+    private Stmt declaration() {
+        try {
+            if (match(VAR)) {
+                return varDeclaration();
+            }
+            return statement();
+        } catch (ParseError error) {
+            synchronize();
+            return null;
+        }
+    }
 
     // statement → exprStmt
     //           | printStmt ;
     //
     private Stmt statement() {
-        if (match(TokenType.PRINT)) {
+        if (match(PRINT)) {
             return printStatement();
         }
         return expressionStatement();
     }
 
-
-    // exprStmt  → expression ";" ;
+    // printStmt → "print" expression ";" ;
     //
     private Stmt printStatement() {
         Expr value = expression();
@@ -68,8 +84,22 @@ class Parser {
         return new Stmt.Print(value);
     }
 
+    // varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
+    //
+    private Stmt varDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect variable name.");
 
-    // printStmt → "print" expression ";" ;
+        Expr initializer = null;
+        if (match(EQUAL)) {
+            initializer = expression();
+        }
+
+        consume(SEMICOLON, "Expect ';' after variable declaration.");
+       return new Stmt.Var(name, initializer);
+    }
+
+
+    // exprStmt  → expression ";" ;
     //
     private Stmt expressionStatement() {
         Expr expr = expression();
@@ -180,6 +210,10 @@ class Parser {
              return new Expr.Literal(previous().literal);
         }
     
+        if (match(IDENTIFIER)) {
+            return new Expr.Variable(previous());
+        }
+
         if (match(LEFT_PAREN)) {
             Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
