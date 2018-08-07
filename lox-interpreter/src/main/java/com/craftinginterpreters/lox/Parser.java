@@ -111,10 +111,39 @@ class Parser {
     // Binary Expression Operations
     //
 
+    // expression → assignment ;
+    //
     private Expr expression() {
-        return equality();
+        return assignment();
     }
     
+    // assignment → identifier "=" assignment
+    //            | equality ;
+    //
+    private Expr assignment() {
+        Expr expr = equality();
+    
+        if (match(EQUAL)) {
+            Token equals = previous();
+            // Recursively call assignment to evaluate the value.
+            // This is possible as assignment is rught associative.
+            Expr value = assignment();
+        
+            // Trick: Check the expression is a valid assignemnt target.
+            // This trick works because it turns out that every valid 
+            // assignment target happens to also be valid syntax as a 
+            // normal expression.
+            if (expr instanceof Expr.Variable) {
+                // Evaluate the target
+                Token name = ((Expr.Variable) expr).name;
+                return new Expr.Assign(name, value);
+            }
+        
+            error(equals, "Invalid assignment target."); 
+        }
+    
+        return expr;
+    }
 
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
     //
