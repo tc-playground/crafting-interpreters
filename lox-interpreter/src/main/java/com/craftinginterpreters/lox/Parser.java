@@ -1,29 +1,6 @@
 package com.craftinginterpreters.lox;
 
-import static com.craftinginterpreters.lox.TokenType.BANG;
-import static com.craftinginterpreters.lox.TokenType.BANG_EQUAL;
-import static com.craftinginterpreters.lox.TokenType.EOF;
-import static com.craftinginterpreters.lox.TokenType.EQUAL;
-import static com.craftinginterpreters.lox.TokenType.EQUAL_EQUAL;
-import static com.craftinginterpreters.lox.TokenType.FALSE;
-import static com.craftinginterpreters.lox.TokenType.GREATER;
-import static com.craftinginterpreters.lox.TokenType.GREATER_EQUAL;
-import static com.craftinginterpreters.lox.TokenType.IDENTIFIER;
-import static com.craftinginterpreters.lox.TokenType.LEFT_PAREN;
-import static com.craftinginterpreters.lox.TokenType.LESS;
-import static com.craftinginterpreters.lox.TokenType.LESS_EQUAL;
-import static com.craftinginterpreters.lox.TokenType.MINUS;
-import static com.craftinginterpreters.lox.TokenType.NIL;
-import static com.craftinginterpreters.lox.TokenType.NUMBER;
-import static com.craftinginterpreters.lox.TokenType.PLUS;
-import static com.craftinginterpreters.lox.TokenType.PRINT;
-import static com.craftinginterpreters.lox.TokenType.RIGHT_PAREN;
-import static com.craftinginterpreters.lox.TokenType.SEMICOLON;
-import static com.craftinginterpreters.lox.TokenType.SLASH;
-import static com.craftinginterpreters.lox.TokenType.STAR;
-import static com.craftinginterpreters.lox.TokenType.STRING;
-import static com.craftinginterpreters.lox.TokenType.TRUE;
-import static com.craftinginterpreters.lox.TokenType.VAR;
+import static com.craftinginterpreters.lox.TokenType.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,13 +44,30 @@ class Parser {
     }
 
     // statement → exprStmt
-    //           | printStmt ;
-    //
+    //           | printStmt
+    //           | block ;
+    // 
     private Stmt statement() {
         if (match(PRINT)) {
             return printStatement();
         }
+        if (match(LEFT_BRACE)) {
+            return new Stmt.Block(block());
+        }
         return expressionStatement();
+    }
+
+    // block     → "{" declaration* "}" ;
+    //
+    private List<Stmt> block() {
+        List<Stmt> statements = new ArrayList<>();
+    
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+          statements.add(declaration());
+        }
+    
+        consume(RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
     }
 
     // printStmt → "print" expression ";" ;
