@@ -13,9 +13,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
-        }
+        }   
     }
-
+    
     private String stringify(Object object) {
         if (object == null) return "nil";
     
