@@ -1,6 +1,7 @@
 package com.craftinginterpreters.lox;
 
 import com.craftinginterpreters.lox.Expr.Assign;
+import com.craftinginterpreters.lox.Expr.Call;
 import com.craftinginterpreters.lox.Expr.Logical;
 import com.craftinginterpreters.lox.Expr.Variable;
 
@@ -70,6 +71,11 @@ class AstPrinter implements Expr.Visitor<String> {
 
 	@Override
 	public String visitLogicalExpr(Logical expr) {
+		return expr.toString();
+	}
+
+	@Override
+	public String visitCallExpr(Call expr) {
 		return expr.toString();
 	}
 

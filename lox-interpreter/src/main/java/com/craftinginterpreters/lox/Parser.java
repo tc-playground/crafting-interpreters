@@ -326,7 +326,7 @@ class Parser {
     //
 
     // unary → ( "!" | "-" ) unary
-    //   | primary ;
+    //   | call ;
     //
     private Expr unary() {
         if (match(BANG, MINUS)) {
@@ -335,7 +335,40 @@ class Parser {
           return new Expr.Unary(operator, right);
         }
     
-        return primary();
+        return call();
+    }
+
+
+    // call  → primary ( "(" arguments? ")" )* ;
+    //
+    private Expr call() {
+        Expr expr = primary();
+
+        while (true) {
+            if (match(LEFT_PAREN)) {
+                expr = finishCall(expr);
+            } else {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    private Expr finishCall(Expr callee) {
+        List<Expr> arguments = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (arguments.size() >= 8) {
+                    error(peek(), "Cannot have more than 8 arguments.");
+                }
+                arguments.add(expression());
+            } while (match(COMMA));
+        }
+    
+        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+    
+        return new Expr.Call(callee, paren, arguments);
     }
 
 
