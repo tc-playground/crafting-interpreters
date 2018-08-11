@@ -4,10 +4,13 @@ import java.util.List;
 
 class LoxFunction implements LoxCallable {
 
+    private final Environment closure;
+
     private final Stmt.Function declaration;
     
-    LoxFunction(Stmt.Function declaration) {
-            this.declaration = declaration;
+    LoxFunction(Stmt.Function declaration, Environment closure) {
+        this.closure = closure;
+        this.declaration = declaration;
     }
 
     @Override
