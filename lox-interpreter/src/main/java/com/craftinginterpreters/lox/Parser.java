@@ -30,10 +30,17 @@ class Parser {
 
     // Production Rules *******************************************************
 
-    // declaration → varDecl
+    // declaration → funDecl
+    //             | varDecl
     //             | statement ;
+    //
+    // funDecl  → "fun" function ;
+    //
     private Stmt declaration() {
         try {
+            if (match(FUN)) {
+                return function("function");
+            }
             if (match(VAR)) {
                 return varDeclaration();
             }
@@ -43,6 +50,7 @@ class Parser {
             return null;
         }
     }
+
 
     // statement → exprStmt
     //           | forStmt
@@ -192,6 +200,32 @@ class Parser {
         Expr expr = expression();
         consume(SEMICOLON, "Expect ';' after expression.");
         return new Stmt.Expression(expr);
+    }
+
+
+    // function → IDENTIFIER "(" parameters? ")" block ;
+    // 
+    private Stmt.Function function(String kind) {
+        Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+
+        // Parse Parameters List
+        consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+        List<Token> parameters = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 8) {
+                    error(peek(), "Cannot have more than 8 parameters.");
+                }
+        
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+        // Parse Function Body
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        List<Stmt> body = block();
+        return new Stmt.Function(name, parameters, body);
     }
 
 
