@@ -49,19 +49,23 @@ public class Lox {
     }
 
     private static void run(String source) {
+        // Scan
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-
+        // Parse
         Parser parser = new Parser(tokens);
         List<Stmt> statements = parser.parse();
-    
-        // Stop if there was a syntax error.
         if (hadError) {
             return;
         }
-
+        // Resolver - Semantic analysis of variable declarations and assignments.
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+        if (hadError) {
+            return;
+        }
+        // Interpret
         interpreter.interpret(statements);
-        // System.out.println(new AstPrinter().print(expression));
     }
 
     static void error(int line, String message) {
