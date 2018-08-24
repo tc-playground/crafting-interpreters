@@ -37,7 +37,6 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         declare(stmt.name);
         define(stmt.name);
 
-        
         return null;
     }
   
@@ -127,6 +126,13 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitSetExpr(Expr.Set expr) {
+        resolve(expr.value);
+        resolve(expr.object);
+        return null;
+    }
+
+    @Override
     public Void visitUnaryExpr(Expr.Unary expr) {
         resolve(expr.right);
         return null;
@@ -136,8 +142,14 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitCallExpr(Expr.Call expr) {
         resolve(expr.callee);
         for (Expr argument : expr.arguments) {
-                resolve(argument);
+            resolve(argument);
         }
+        return null;
+    }
+
+    @Override
+    public Void visitGetExpr(Expr.Get expr) {
+        resolve(expr.object);
         return null;
     }
 
