@@ -28,7 +28,8 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     private enum ClassType {
             NONE,
-            CLASS
+            CLASS,
+            SUBCLASS
     }
 
     private ClassType currentClass = ClassType.NONE;
@@ -51,19 +52,20 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
 
         if (stmt.superclass != null) {     
-            beginScope();                    
-            scopes.peek().put("super", true);
+            currentClass = ClassType.SUBCLASS;                        
+            resolve(stmt.superclass);
         }    
-
-        if (stmt.superclass != null) {
-            resolve(stmt.superclass);   
-        }                             
+                           
 
         define(stmt.name);
+
+        if (stmt.superclass != null) {
+            beginScope();
+            scopes.peek().put("super", true);
+        }
         
         beginScope();
         scopes.peek().put("this", true);
-
         for (Stmt.Function method : stmt.methods) {
             FunctionType declaration = FunctionType.METHOD;
             if (method.name.lexeme.equals("init")) {
@@ -71,7 +73,6 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             }
             resolveFunction(method, declaration); 
         }
-
         endScope();
 
         if (stmt.superclass != null) {
@@ -181,6 +182,13 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override                                    
     public Void visitSuperExpr(Expr.Super expr) {
+        if (currentClass == ClassType.NONE) {                      
+            Lox.error(expr.keyword,                                  
+                "Cannot use 'super' outside of a class.");           
+        } else if (currentClass != ClassType.SUBCLASS) {           
+            Lox.error(expr.keyword,                                  
+                "Cannot use 'super' in a class with no superclass.");
+        } 
         resolveLocal(expr, expr.keyword);          
         return null;                               
     }        
