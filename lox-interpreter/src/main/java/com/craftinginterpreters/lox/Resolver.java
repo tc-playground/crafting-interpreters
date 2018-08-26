@@ -24,6 +24,14 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         METHOD
     }
 
+
+    private enum ClassType {
+            NONE,
+            CLASS
+    }
+
+    private ClassType currentClass = ClassType.NONE;
+
     // A block statement introduces a new scope for the statements it contains.
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
@@ -35,13 +43,22 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+
         declare(stmt.name);
         define(stmt.name);
         
+        beginScope();
+        scopes.peek().put("this", true);
+
         for (Stmt.Function method : stmt.methods) {
             FunctionType declaration = FunctionType.METHOD;
             resolveFunction(method, declaration); 
         }
+
+        endScope();
+        currentClass = enclosingClass;
 
         return null;
     }
@@ -135,6 +152,17 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitSetExpr(Expr.Set expr) {
         resolve(expr.value);
         resolve(expr.object);
+        return null;
+    }
+
+    @Override
+    public Void visitThisExpr(Expr.This expr) {
+        if (currentClass == ClassType.NONE) {
+            Lox.error(expr.keyword,
+                "Cannot use 'this' outside of a class.");
+            return null;
+          }
+        resolveLocal(expr, expr.keyword);
         return null;
     }
 
