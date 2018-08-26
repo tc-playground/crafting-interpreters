@@ -2,7 +2,9 @@ package com.craftinginterpreters.lox;
 
 import com.craftinginterpreters.lox.Expr.Assign;
 import com.craftinginterpreters.lox.Expr.Call;
+import com.craftinginterpreters.lox.Expr.Get;
 import com.craftinginterpreters.lox.Expr.Logical;
+import com.craftinginterpreters.lox.Expr.Set;
 import com.craftinginterpreters.lox.Expr.Variable;
 
 // Creates an unambiguous, if ugly, string representation of AST nodes.
@@ -76,6 +78,16 @@ class AstPrinter implements Expr.Visitor<String> {
 
 	@Override
 	public String visitCallExpr(Call expr) {
+		return expr.toString();
+	}
+
+	@Override
+	public String visitGetExpr(Get expr) {
+		return expr.toString();
+	}
+
+	@Override
+	public String visitSetExpr(Set expr) {
 		return expr.toString();
 	}
 
