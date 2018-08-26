@@ -49,6 +49,12 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
         declare(stmt.name);
 
+
+        if (stmt.superclass != null) {     
+            beginScope();                    
+            scopes.peek().put("super", true);
+        }    
+
         if (stmt.superclass != null) {
             resolve(stmt.superclass);   
         }                             
@@ -67,6 +73,11 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         }
 
         endScope();
+
+        if (stmt.superclass != null) {
+            endScope();
+        }
+
         currentClass = enclosingClass;
 
         return null;
@@ -167,6 +178,12 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         resolve(expr.object);
         return null;
     }
+
+    @Override                                    
+    public Void visitSuperExpr(Expr.Super expr) {
+        resolveLocal(expr, expr.keyword);          
+        return null;                               
+    }        
 
     @Override
     public Void visitThisExpr(Expr.This expr) {
@@ -289,6 +306,5 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 }
 
 // class Doughnut { cook() { print "Fry until golden brown."; } }
-// class BostonCream < Doughnut {}
-  
+// class BostonCream < Doughnut { cook() { super.cook(); print "Pipe full of custard and coat with chocolate."; } }
 // BostonCream().cook();
